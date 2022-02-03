@@ -1,0 +1,58 @@
+:host {
+  --button-size: 25px;
+  --image-size: 512px;
+
+  display: block;
+  padding: 20px;
+  margin: 0 auto;
+  width: fit-content;
+}
+
+#inputs {
+  display: flex;
+  justify-content: space-between;
+  width: var(--image-size);
+  margin: 0 auto;
+  margin-bottom: 20px;
+}
+
+#inputs > * {
+  cursor: pointer;
+}
+
+#inputs button {
+  width: var(--button-size);
+  height: var(--button-size);
+  display: flex;
+
+  border: none;
+  background: none;
+  padding: 0;
+}
+
+#inputs button svg path {
+  fill: #52c842;
+}
+
+#inputs button[disabled] {
+  cursor: not-allowed;
+}
+
+#inputs button[disabled] svg path {
+  fill: #ff8c8c;
+}
+
+#inputs button svg {
+  width: 100%;
+  height: 100%;
+}
+
+#images {
+  display: flex;
+  justify-content: center;
+}
+
+#images img {
+  width: var(--image-size);
+  height: var(--image-size);
+}
