@@ -1,5 +1,6 @@
 import { LitElement, html } from 'lit';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
+import { dateToDTString, padNumber02, clamp } from './utils.mjs';
 import style from '../css/sun-viewer.css';
 import nextIco from '../svg/next.svg';
 import prevIco from '../svg/prev.svg';
@@ -9,16 +10,6 @@ let   MAX_DT      = ''; //will be set on app init
 const IMAGES_PATH = '/img/sun';
 const ONE_HOUR    = 1 * 1000 * 3600; //in ms
 const MAX_ERRORS  = 100;
-
-function dateToDTString(date) { //YYYY-MM-ddThh:mm
-  const toUTC = new Date(date);
-  toUTC.setMinutes(toUTC.getMinutes() - date.getTimezoneOffset());
-  return toUTC.toISOString().replace(/:\d\d\.\d+Z$/, '');
-}
-
-function padNumber02(num) { //1 -> '01', 2 -> '02', 10 -> '10', etc.
-  return String(num).padStart(2, '0');
-}
 
 class SunViewer extends LitElement {
   static get styles() {
@@ -114,23 +105,10 @@ class SunViewer extends LitElement {
   setDT(newDT) {
     dateToDTString(newDT); //check that dt is valid, else it will trigger exception
 
-    if (newDT <= MIN_DT) {
-      newDT = MIN_DT;
-      this.prevAvailable = false;
-    }
-    else {
-      this.prevAvailable = true;
-    }
+    this.prevAvailable = (newDT > MIN_DT);
+    this.nextAvailable = (newDT < MAX_DT);
+    this.currentDT = clamp(newDT, MIN_DT, MAX_DT);
 
-    if (newDT >= MAX_DT) {
-      newDT = MAX_DT;
-      this.nextAvailable = false;
-    }
-    else {
-      this.nextAvailable = true;
-    }
-
-    this.currentDT = newDT;
     console.log('New dt set to:', this.currentDT);
   }
 
