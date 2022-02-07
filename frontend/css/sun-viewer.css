@@ -55,4 +55,6 @@
 #images img {
   width: var(--image-size);
   height: var(--image-size);
+  background-color: black;
+  color: white;
 }

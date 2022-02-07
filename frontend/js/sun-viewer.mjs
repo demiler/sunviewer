@@ -4,19 +4,19 @@ import style from '../css/sun-viewer.css';
 import nextIco from '../svg/next.svg';
 import prevIco from '../svg/prev.svg';
 
-const MIN_DT = new Date('2010-05-19T00:00');
-let MAX_DT = ''; //will be set on app init
-const MAX_ERRORS = 100;
+const MIN_DT      = new Date('2010-05-19T00:00');
+let   MAX_DT      = ''; //will be set on app init
 const IMAGES_PATH = '/img/sun';
-const ONE_HOUR   = 1 * 1000 * 3600; //in ms
+const ONE_HOUR    = 1 * 1000 * 3600; //in ms
+const MAX_ERRORS  = 100;
 
-function dateToDTString(date) {
+function dateToDTString(date) { //YYYY-MM-ddThh:mm
   const toUTC = new Date(date);
   toUTC.setMinutes(toUTC.getMinutes() - date.getTimezoneOffset());
   return toUTC.toISOString().replace(/:\d\d\.\d+Z$/, '');
 }
 
-function padNumber02(num) {
+function padNumber02(num) { //1 -> '01', 2 -> '02', 10 -> '10', etc.
   return String(num).padStart(2, '0');
 }
 
@@ -29,12 +29,12 @@ class SunViewer extends LitElement {
     return {
       prevAvailable: { type: Boolean },
       nextAvailable: { type: Boolean },
-      currentImage: { type: String },
+      currentImage:  { type: String  },
     }
   }
 
   constructor() {
-    super();
+    super(); //library requirement
     this.mode = 'aia';
     this.currentWL = '0094';
 
@@ -107,13 +107,6 @@ class SunViewer extends LitElement {
         <img src=${this.currentImage} alt='Sun' @error=${this.errorHandler}>
       </div>
 
-      <!--<div id="error-handler">
-        <span>Unable to get image for current date time.</span>
-        <button>Seek backward</button>
-        <button>Seek forward</button>
-        <button>Stop</button>
-      </div>-->
-
       <p>Solar images are courtesy of NASA/SDO and the AIA, EVE, and HMI science teams</p>
     `;
   }
@@ -138,17 +131,16 @@ class SunViewer extends LitElement {
     }
 
     this.currentDT = newDT;
-    console.log(this.currentDT);
+    console.log('New dt set to:', this.currentDT);
   }
 
   updateDT(e) {
-    console.log('dt update');
     try {
       this.setDT(new Date(e.target.value));
       this.updatePicture();
     }
     catch(err) {
-      console.log('Unable to set dt');
+      console.error('Unable to set dt');
     }
   }
 
@@ -174,7 +166,7 @@ class SunViewer extends LitElement {
   errorHandler(e) {
     if (this.errorCount > MAX_ERRORS) {
       this.errorCount = 0;
-      console.log('Error: too many images missing. Stop');
+      console.error('Error: too many images missing. Stop');
     }
     else {
       this.errorCount++;
@@ -184,40 +176,29 @@ class SunViewer extends LitElement {
 
   shortcutHandler(e) {
     switch (e.code) {
-      case 'ArrowLeft': this.showPrev(); break;
+      case 'ArrowLeft':  this.showPrev(); break;
       case 'ArrowRight': this.showNext(); break;
     }
   }
 
+  getPath(wavelength, dtTM, dtYear, mode='aia') {
+    switch (wavelength) {
+      case 'hmi':  return `${IMAGES_PATH}/hmi/${dtYear}/${dtTM}.jpg`;
+      case 'cor1': return `${IMAGES_PATH}/soho/1/${dtYear}/${dtTM}.jpg`; //depricated
+      case 'cor2': return `${IMAGES_PATH}/soho/2/${dtYear}/${dtTM}.jpg`;
+      default:     return `${IMAGES_PATH}/${mode}/${wavelength}/${dtYear}/${dtTM}.jpg`
+    }
+  }
+
   updatePicture() {
-    const dttm =
+    const dtTM = //MMddhh
       padNumber02(this.currentDT.getMonth() + 1) +
       padNumber02(this.currentDT.getDate()) +
       padNumber02(this.currentDT.getHours());
-
     const dtYear = this.currentDT.getFullYear();
 
-    switch (this.currentWL) {
-      case 'hmi':
-        this.currentImage =
-          `${IMAGES_PATH}/hmi/${dtYear}/${dttm}.jpg`;
-        break;
-      case 'cor1': //depricated
-        this.currentImage =
-          `${IMAGES_PATH}/soho/1/${dtYear}/${dttm}.jpg`;
-          //`${IMAGES_PATH}/soho/coronagraph/1/${dtYear}/${dttm}.jpg`;
-        break;
-      case 'cor2':
-        this.currentImage =
-          `${IMAGES_PATH}/soho/2/${dtYear}/${dttm}.jpg`;
-          //`${IMAGES_PATH}/soho/coronagraph/2/${dtYear}/${dttm}.jpg`;
-        break;
-      default:
-        this.currentImage =
-          `${IMAGES_PATH}/${this.mode}/${this.currentWL}/${dtYear}/${dttm}.jpg`;
-    }
-
-    console.log(this.currentImage);
+    this.currentImage = this.getPath(this.currentWL, dtTM, dtYear, this.mode);
+    console.log('Updating image to:', this.currentImage);
   }
 };
 
