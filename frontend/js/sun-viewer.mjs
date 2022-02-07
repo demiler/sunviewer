@@ -13,7 +13,7 @@ const ONE_HOUR   = 1 * 1000 * 3600; //in ms
 function dateToDTString(date) {
   const toUTC = new Date(date);
   toUTC.setMinutes(toUTC.getMinutes() - date.getTimezoneOffset());
-  return toUTC.toISOString().replace(/:\d\d.\d+Z/, '');
+  return toUTC.toISOString().replace(/:\d\d\.\d+Z$/, '');
 }
 
 function padNumber02(num) {
